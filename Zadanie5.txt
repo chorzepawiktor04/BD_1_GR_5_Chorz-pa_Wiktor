@@ -1,0 +1,56 @@
+CREATE DATABASE BAZA;
+USE BAZA;
+
+--1,2
+
+CREATE TABLE zamowienia (
+    id_produktu INT PRIMARY KEY,
+    nazwa_produktu VARCHAR(50) UNIQUE NOT NULL,
+    id_klienta INT NOT NULL,
+    nazwa_klienta VARCHAR(50) UNIQUE NOT NULL,
+    data_zamowienia DATETIME NOT NULL,
+    cena_produktu DECIMAL(10, 2) NOT NULL,
+    ilosc INT NOT NULL,
+    VAT DECIMAL(5, 2), 
+    suma_brutto DECIMAL(10, 2) NOT NULL,
+    suma_netto DECIMAL(10, 2) NOT NULL,
+
+    CHECK (
+        (nazwa_produktu = 'Książki' AND VAT = 5) OR
+        (nazwa_produktu = 'Pieczywo' AND VAT = 8) OR
+        (nazwa_produktu = 'Piwo' AND VAT = 3) OR
+        (nazwa_produktu = 'Samochód' AND VAT = 23) OR
+        (nazwa_produktu NOT IN ('Książki', 'Pieczywo', 'Piwo', 'Samochód') AND VAT IS NULL)
+    )
+    
+    suma_brutto AS (suma_netto + (suma_netto * VAT / 100)),
+
+    CONSTRAINT unikalne_zamowienie UNIQUE (id_produktu, id_klienta, data_zamowienia),
+);
+
+--klucze kandydujace
+(nazwa_produktu);
+(id_produktu, nazwa_produktu);
+
+--3
+
+CREATE TABLE pomieszczenia (
+    id_pomieszczenia INT PRIMARY KEY,
+    numer_pomieszczenia VARCHAR(20) NOT NULL,
+    id_budynku INT NOT NULL,
+    powierzchnia DECIMAL(10, 2) NOT NULL,
+    liczba_okien INT NOT NULL,
+    liczba_drzwi INT NOT NULL,
+    ulica VARCHAR(255) NOT NULL,
+    miasto VARCHAR(100) NOT NULL,
+    kod_pocztowy VARCHAR(10) NOT NULL
+);
+
+--zaleznosci funkcyjne
+id_pomieszczenia -> numer_pomieszczenia;
+id_pomieszczenia -> id_budynku;
+
+--klucze kandydujace
+(numer_pomieszczenia);
+(id_budynku);
+(numer_pomieszczenia, id_budynku)
