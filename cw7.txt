@@ -1,0 +1,75 @@
+1.
+CREATE OR REPLACE FUNCTION fibonacci(n INT)
+RETURNS BIGINT AS $$
+BEGIN
+    a INT := 0;
+    b INT := 1;
+    i INT := 0;
+    temp INT;
+BEGIN
+    WHILE i <= n LOOP
+        fib_value := a;
+        temp := a;
+        a := b;
+        b := temp + b;
+        RETURN NEXT;
+        i := i + 1;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE print_fibonacci(n INT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+	counter INT := 1;
+	fib_number BIGINT;
+BEGIN
+	WHILE counter <= n LOOP
+		fib_number := fibonacci(counter);
+		RAISE NOTICE ‘Fibonacci number %: %’, counter, fib_number;
+		counter := counter + 1;
+	END LOOP;
+END;
+$$;
+
+
+
+2.
+CREATE OR REPLACE FUNCTION uppercase_lastname()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.LastName := UPPER(NEW.LastName);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER uppercase_lastname_trigger
+BEFORE INSERT OR UPDATE ON "Person"."Person"
+FOR EACH ROW
+EXECUTE FUNCTION uppercase_lastname();
+
+
+
+3.
+CREATE OR REPLACE FUNCTION tax_rate_monitoring()	
+RETURNS TRIGGER AS $$
+DECLARE
+    old_tax_rate NUMERIC;
+    new_tax_rate NUMERIC;
+    max_change_percentage NUMERIC := 30;
+BEGIN
+    old_tax_rate := OLD.TaxRate;
+    new_tax_rate := NEW.TaxRate;
+
+    IF ABS(new_tax_rate - old_tax_rate) > max_change_percentage THEN
+        RAISE EXCEPTION 'Zmiana wartości w polu TaxRate o więcej niż 30%% nie jest dozwolona.';
+    END IF;
+
+    RETURN NEW;
+END;
+
+CREATE TRIGGER tax_rate_monitoring_trigger
+BEFORE UPDATE ON "Sales"."TaxRate"
+FOR EACH ROW
+EXECUTE FUNCTION tax_rate_monitoring();
