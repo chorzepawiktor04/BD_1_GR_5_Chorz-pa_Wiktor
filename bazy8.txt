@@ -1,0 +1,32 @@
+--1
+WITH TempEmployeeInfo AS (
+	SELECT 
+    p.firstname, 
+    p.lastname, 
+    p.businessentityid, 
+    MAX(hr.rate) AS max_salary
+	FROM person.person p
+	INNER JOIN humanresources.employeepayhistory hr ON p.businessentityid = hr.businessentityid
+	GROUP BY p.firstname, p.lastname, p.businessentityid
+	ORDER BY max_salary DESC
+	LIMIT 1
+)
+SELECT *
+FROM TempEmployeeInfo;
+
+
+
+--2
+WITH half AS (
+	SELECT 
+    s.customerid, 
+    s.territoryid, 
+    CONCAT(p.firstName, ' ', p.lastName) AS fullName
+	FROM sales.customer s
+	INNER JOIN sales.salesterritoryhistory sales ON sales.territoryid = s.territoryid
+	INNER JOIN person.person p ON sales.businessentityid = p.businessentityid
+	LIMIT 10
+)
+
+SELECT *
+FROM half;
