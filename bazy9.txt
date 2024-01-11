@@ -1,0 +1,63 @@
+z1
+--1--
+
+"Executio"Hash Join  (cost=415.95..1581.22 rows=279 width=44) (actual time=13.990..56.588 rows=486 loops=1)"
+"  Hash Cond: (soh.customerid = c.customerid)"
+"  ->  Seq Scan on salesorderheader soh  (cost=0.00..1082.65 rows=31465 width=32) (actual time=0.482..32.149 rows=31465 loops=1)"
+"  ->  Hash  (cost=413.75..413.75 rows=176 width=16) (actual time=13.458..13.459 rows=176 loops=1)"
+"        Buckets: 1024  Batches: 1  Memory Usage: 16kB"
+"        ->  Seq Scan on customer c  (cost=0.00..413.75 rows=176 width=16) (actual time=0.955..13.275 rows=176 loops=1)"
+"              Filter: (territoryid = 5)"
+"              Rows Removed by Filter: 19644"
+"Planning Time: 14.892 ms"
+"Execution Time: 58.964 ms"
+
+--2--
+
+"Hash Join  (cost=183.14..1348.41 rows=279 width=44) (actual time=0.774..9.187 rows=486 loops=1)"
+"  Hash Cond: (soh.customerid = c.customerid)"
+"  ->  Seq Scan on salesorderheader soh  (cost=0.00..1082.65 rows=31465 width=32) (actual time=0.027..2.897 rows=31465 loops=1)"
+"  ->  Hash  (cost=180.94..180.94 rows=176 width=16) (actual time=0.702..0.704 rows=176 loops=1)"
+"        Buckets: 1024  Batches: 1  Memory Usage: 16kB"
+"        ->  Bitmap Heap Scan on customer c  (cost=5.65..180.94 rows=176 width=16) (actual time=0.575..0.646 rows=176 loops=1)"
+"              Recheck Cond: (territoryid = 5)"
+"              Heap Blocks: exact=24"
+"              ->  Bitmap Index Scan on idx_territoryid  (cost=0.00..5.61 rows=176 width=0) (actual time=0.564..0.564 rows=176 loops=1)"
+"                    Index Cond: (territoryid = 5)"
+"Planning Time: 4.021 ms"
+"Execution Time: 9.870 ms"
+
+
+
+
+
+Druga metoda jest zdecydowanie bardziej efektywna czasowo. Analizując dane, które otrzymałem od programu, jest to spowodowane róznicą w przeszukiwaniu tabeli customer. 
+W pierwszym wypadku wykonywany jest na nie Seq Scan wraz z filtrem zawierającym warunek terrirotyid=5. Za drugim razem wykonywany jest Bitmap Index Scan na samej kolumnie territoryid, 
+co sprawia że zapytanie wykonuje się szybciej.
+
+
+z.2
+--a--
+BEGIN TRANSACTION;
+
+UPDATE Production.Product
+SET listprice = 1.1 * listprice
+WHERE ProductId = 680;
+
+COMMIT TRANSACTION
+
+--b--
+BEGIN TRANSACTION;
+
+DELETE FROM Production.Product
+WHERE ProductId = 707;
+
+COMMIT TRANSACTION
+
+--c--
+BEGIN TRANSACTION;
+
+INSERT INTO Production.Product(Name,ProductNumber,Color)
+VALUES('Produkt1', 'AB54123', 'Czerwony');
+
+COMMIT TRANSACTION 
